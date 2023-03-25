@@ -1,153 +1,210 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>URL Traversal Tool</title>
-<style>
-	body {
-		font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		text-align: center;
-		margin: 0;
-		padding: 0;
-		background-color: #F4F4F4;
-	}
-
-	h1, h2, h3, h4, h5, h6 {
-		margin: 0;
-		padding: 0;
-		font-weight: normal;
-	}
-
-	input[type="submit"] {
-		margin-top: 20px;
-		padding: 12px 24px;
-		border-radius: 5px;
-		background-color: #4CAF50;
-		color: white;
-		font-weight: bold;
-		cursor: pointer;
-		border: none;
-		font-size: 16px;
-	}
-
-	progress {
-		margin-top: 20px;
-		display: none;
-	}
-
-	#log {
-		margin-top: 20px;
-	}
-
-	#log div {
-		margin-bottom: 10px;
-	}
-
-	#result {
-		margin-top: 20px;
-		text-align: left;
-		font-size: 18px;
-		padding: 20px;
-		background-color: white;
-		box-shadow: 0px 0px 5px #DADADA;
-		border-radius: 5px;
-	}
-
-	#result ul {
-		list-style-type: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	#result li {
-		margin-bottom: 10px;
-	}
-
-	#result span {
-		color: #4CAF50;
-		font-weight: bold;
-	}
-
-	@media (max-width: 768px) {
-		#result {
-			font-size: 16px;
-			padding: 10px;
-		}
-
-		input[type="submit"] {
-			padding: 10px 20px;
-			font-size: 14px;
-		}
-	}
-</style>
-
-
-</head>
-<body>
-  <form>
-    <label for="url-input">Enter a domain name or IP address:</label>
-    <input type="text" id="url-input" name="url-input">
-    <br>
-    <label for="layer-input">How many layers deep to go?</label>
-    <input type="number" id="layer-input" name="layer-input" value="0">
-    <br>
-    <input type="submit" value="Test URL">
-  </form>
-
-  <div id="log"></div>
-  <progress id="progress"></progress>
-  <div id="result"><br/>Successful Traversal Paths:
-    <ul></ul>
-  </div>
-
-  <script>
-    const form = document.querySelector('form');
-    const log = document.querySelector('#log');
-    const result = document.querySelector('#result ul');
-    const progressBar = document.querySelector('#progress');
-    let currentLayer = 0;
-    let totalLayers = 0;
-    let testedUrls = [];
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-
-      log.innerHTML = '';
-      result.innerHTML = '';
-
-      const url = document.querySelector('#url-input').value;
-      const layers = parseInt(document.querySelector('#layer-input').value);
-
-      currentLayer = 0;
-      totalLayers = layers;
-      progressBar.value = 0;
-      progressBar.max = totalLayers;
-      progressBar.style.display = 'block';
-
-      testUrl(url, layers);
-    });
-
-    async function testUrl(url, layers) {
-      let testUrl = url.endsWith('/') ? url : url + '/';
-      testedUrls.push(testUrl);
-
-      for (let i = 1; i <= layers; i++) {
-        testUrl += '../';
-        currentLayer++;
-        progressBar.value = currentLayer;
-
-        try {
-          const response = await fetch(testUrl, { method: 'GET' });
-          log.innerHTML += `<div>${testUrl}: ${response.status}</div>`;
-          if (response.status === 200) {
-            result.innerHTML += `<li><span>${testUrl}</span></li>`;
-          }
-        } catch (error) {
-          log.innerHTML += `<div>${testUrl}: ${error.message}</div>`;
+  <head>
+    <title>Tyrolean - URL Traversal Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        text-align: center;
+        margin-top: 30px;
+        padding: 0;
+        background-color: #F4F4F4;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        margin: 0;
+        padding: 0;
+        font-weight: normal;
+      }
+      form {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: gray;
+      }
+      label {
+        margin-top: 20px;
+        font-size: 16px;
+        color: #333333;
+        font-weight: bold;
+        text-align: left;
+        width: 100%;
+        max-width: 400px;
+      }
+      input[type="text"], input[type="number"] {
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 5px;
+        border: none;
+        background-color: rgb(203, 203, 203);
+        font-size: 16px;
+        width: 100%;
+        max-width: 400px;
+        box-sizing: border-box;
+        box-shadow: inherit;
+      }
+      input[type="submit"] {
+        margin-top: 20px;
+        padding: 12px 24px;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        font-size: 16px;
+        width: 100%;
+        max-width: 400px;
+      }
+      progress {
+        margin-top: 20px;
+        display: none;
+        width: 100%;
+        max-width: 400px;
+      }
+      #log {
+        margin-top: 20px;
+        text-align: left;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+      #log div {
+        margin-bottom: 10px;
+        font-size: 16px;
+        color: #333333;
+      }
+      #result {
+        margin-top: 20px;
+        text-align: left;
+        font-size: 18px;
+        padding: 20px;
+        background-color: white;
+        box-shadow: 0px 0px 5px #DADADA;
+        border-radius: 5px;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+      #result ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+      #result li {
+        margin-bottom: 10px;
+      }
+      #result span {
+        color: #4CAF50;
+        font-weight: bold;
+      }
+      @media (max-width: 768px) {
+        #result {
+          font-size: 16px;
+          padding: 10px;
+        }
+        input[type="submit"] {
+          padding: 10px 20px;
+          font-size: 14px;
         }
       }
+    </style>
+  </head>
+  <body>
+    <pre>
+   __                   __               
+  / /___  ___________  / /__  ____ _____ 
+ / __/ / / / ___/ __ \/ / _ \/ __ `/ __ \
+/ /_/ /_/ / /  / /_/ / /  __/ /_/ / / / /
+\__/\__, /_/   \____/_/\___/\__,_/_/ /_/ 
+   /____/                                
 
-      progressBar.remove();
-    }
-  </script>
-</body>
+    </pre>
+    <form>
+      <label for="url-input">Enter a domain name or IP address:
+      </label>
+      <input type="text" id="url-input" name="url-input">
+      <br>
+      <label for="directory-input">String to append to the  request:</label>
+      <input type="text" id="directory-input" name="directory-input">
+      <br>
+      <label for="layer-input">How many layers deep to go?
+      </label>
+      <input type="number" id="layer-input" name="layer-input" value="0">
+      <br>
+      <input type="submit" value="Test URL">
+    </form>
+    <div id="log">
+    </div>
+    <progress id="progress">
+    </progress>
+    <div id="result">
+      <br/>Successful Traversal Paths:
+      <ul>
+      </ul>
+    </div>
+    <script>
+      const form = document.querySelector('form');
+      const log = document.querySelector('#log');
+      const result = document.querySelector('#result ul');
+      const progressBar = document.querySelector('#progress');
+      let currentLayer = 0;
+      let totalLayers = 0;
+      let testedUrls = [];
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        log.innerHTML = '';
+        result.innerHTML = '';
+        const url = document.querySelector('#url-input').value;
+        const layers = parseInt(document.querySelector('#layer-input').value);
+        const directory = document.querySelector('#directory-input').value;
+        currentLayer = 0;
+        totalLayers = layers;
+        progressBar.value = 0;
+        progressBar.max = totalLayers;
+        progressBar.style.display = 'block';
+        testUrl(url, layers, directory);
+      });
+      async function testUrl(url, layers, directory) {
+        let testUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+        testedUrls.push(testUrl);
+        
+        const traversalPaths = ['','./.','./','../','.../','%2e','%2e%2e','%252e','%252e','/api/','/api/v1/','/api/v2/','/backup/','/blog/','/cgi-bin/','/css/','/fonts/','/images/','/img/','/js/','/logs/','/media/','/scripts/','/static/','/uploads/','/_private/','/etc/','/admin/','/_vti_log/'];
+        
+        for (let i = 1; i <= layers; i++) {
+          for (let j = 0; j < traversalPaths.length; j++) {
+            const traversalPath = traversalPaths[j];
+            
+            let layerUrl = `${testUrl}/${directory}${traversalPath}`;
+            
+            if (i > 1) {
+              layerUrl = `${testUrl}/${Array(i).fill('..').join('/')}/${directory}${traversalPath.substring(1)}`;
+            }
+            
+            currentLayer++;
+            progressBar.value = currentLayer;
+            progressBar.textContent = `${currentLayer} / ${totalLayers}`;
+            
+            try {
+              const response = await fetch(layerUrl, {
+                method: 'GET'
+              });
+              log.innerHTML += `<div>${layerUrl} : ${response.status}</div>`;
+              if (response.ok) {
+                result.innerHTML += `<li><span>${layerUrl}</span></li>`;
+              }
+            } catch (error) {
+              log.innerHTML += `<div>${layerUrl} : ${error.message}</div>`;
+            }
+          }
+        }
+        
+        progressBar.style.display = 'none';
+      }
+
+
+      
+    </script>
+  </body>
 </html>
