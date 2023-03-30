@@ -170,7 +170,7 @@
         let testUrl = url.endsWith('/') ? url.slice(0, -1) : url;
         testedUrls.push(testUrl);
         
-        const traversalPaths = ['','./.','./','../','.../','%2e','%2e%2e','%252e','%252e','/api/','/api/v1/','/api/v2/','/backup/','/blog/','/cgi-bin/','/css/','/fonts/','/images/','/img/','/js/','/logs/','/media/','/scripts/','/static/','/uploads/','/_private/','/etc/','/admin/','/_vti_log/'];
+        const traversalPaths = ['','./.','./','../','.../','%2e','%2e%2e','%252e','%252e','api/','api/v1/','api/v2/','backup/','blog/','cgi-bin/','css/','fonts/','images/','img/','js/','logs/','media/','scripts/','static/','uploads/','_private/','etc/','admin/','_vti_log/'];
         
         for (let i = 1; i <= layers; i++) {
           for (let j = 0; j < traversalPaths.length; j++) {
