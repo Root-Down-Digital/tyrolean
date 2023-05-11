@@ -167,44 +167,44 @@
         testUrl(url, layers, directory);
       });
       async function testUrl(url, layers, directory) {
-        let testUrl = url.endsWith('/') ? url.slice(0, -1) : url;
-        testedUrls.push(testUrl);
-        
-        const traversalPaths = ['','./.','./','../','.../','%2e','%2e%2e','%252e','%252e','api/','api/v1/','api/v2/','backup/','blog/','cgi-bin/','css/','fonts/','images/','img/','js/','logs/','media/','scripts/','static/','uploads/','_private/','etc/','admin/','_vti_log/'];
-        
-        for (let i = 1; i <= layers; i++) {
-          for (let j = 0; j < traversalPaths.length; j++) {
-            const traversalPath = traversalPaths[j];
-            
-            let layerUrl = `${testUrl}/${directory}${traversalPath}`;
-            
-            if (i > 1) {
-              layerUrl = `${testUrl}/${Array(i).fill('..').join('/')}/${directory}${traversalPath.substring(1)}`;
-            }
-            
-            currentLayer++;
-            progressBar.value = currentLayer;
-            progressBar.textContent = `${currentLayer} / ${totalLayers}`;
-            
-            try {
-              const response = await fetch(layerUrl, {
-                method: 'GET'
-              });
-              log.innerHTML += `<div>${layerUrl} : ${response.status}</div>`;
-              if (response.ok) {
-                result.innerHTML += `<li><span>${layerUrl}</span></li>`;
-              }
-            } catch (error) {
-              log.innerHTML += `<div>${layerUrl} : ${error.message}</div>`;
-            }
-          }
+  let testUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+  testedUrls.push(testUrl);
+
+  const traversalPaths = ['./','./','../', '.%2e', '%2e','%2f','%252e','.%2f.%2f'];
+
+  for (let i = 1; i <= layers; i++) {
+    for (let j = 0; j < traversalPaths.length; j++) {
+      const traversalPath = traversalPaths[j];
+
+      // Generate traversal path for the current layer
+      let layerTraversalPath = Array(i).fill(traversalPath).join('');
+
+      // Append the traversal path to the testUrl
+      let layerUrl = `${testUrl}/${directory}${layerTraversalPath}`;
+
+      currentLayer++;
+      progressBar.value = currentLayer;
+      progressBar.textContent = `${currentLayer} / ${totalLayers}`;
+
+      try {
+        const response = await fetch(layerUrl, {
+          method: 'GET'
+        });
+        log.innerHTML += `<div>${layerUrl} : ${response.status}</div>`;
+        if (response.ok) {
+          result.innerHTML += `<li><span>${layerUrl}</span></li>`;
         }
-        
-        progressBar.style.display = 'none';
+      } catch (error) {
+        log.innerHTML += `<div>${layerUrl} : ${error.message}</div>`;
       }
+    }
+  }
+
+  progressBar.style.display = 'none';
+}
 
 
       
     </script>
   </body>
-</html>
+	</html>
