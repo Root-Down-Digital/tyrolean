@@ -144,67 +144,97 @@
       <ul>
       </ul>
     </div>
-    <script>
-      const form = document.querySelector('form');
-      const log = document.querySelector('#log');
-      const result = document.querySelector('#result ul');
-      const progressBar = document.querySelector('#progress');
-      let currentLayer = 0;
-      let totalLayers = 0;
-      let testedUrls = [];
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        log.innerHTML = '';
-        result.innerHTML = '';
-        const url = document.querySelector('#url-input').value;
-        const layers = parseInt(document.querySelector('#layer-input').value);
-        const directory = document.querySelector('#directory-input').value;
-        currentLayer = 0;
-        totalLayers = layers;
-        progressBar.value = 0;
-        progressBar.max = totalLayers;
-        progressBar.style.display = 'block';
-        testUrl(url, layers, directory);
+  <script>
+  const form = document.querySelector('form');
+  const log = document.querySelector('#log');
+  const result = document.querySelector('#result ul');
+  const progressBar = document.querySelector('#progress');
+  let currentLayer = 0;
+  let totalLayers = 0;
+  let testedUrls = [];
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    log.innerHTML = '';
+    result.innerHTML = '';
+    const urlInput = document.querySelector('#url-input').value;
+
+    // Validate the URL
+    const isValidUrl = await validateUrl(urlInput);
+    if (!isValidUrl) {
+      log.innerHTML = '<div>Invalid URL or unable to contact the domain.</div>';
+      return;
+    }
+
+    const url = urlInput;
+    const layers = parseInt(document.querySelector('#layer-input').value);
+    const directory = document.querySelector('#directory-input').value;
+    currentLayer = 0;
+    totalLayers = layers;
+    progressBar.value = 0;
+    progressBar.max = totalLayers;
+    progressBar.style.display = 'block';
+
+    testUrl(url, layers, directory);
+  });
+
+  async function validateUrl(url) {
+    try {
+      const response = await fetch(url, {
+        method: 'HEAD'
       });
-      async function testUrl(url, layers, directory) {
-  let testUrl = url.endsWith('/') ? url.slice(0, -1) : url;
-  testedUrls.push(testUrl);
-
-  const traversalPaths = ['./','./','../', '.%2e', '%2e','%2f','%252e','.%2f.%2f'];
-
-  for (let i = 1; i <= layers; i++) {
-    for (let j = 0; j < traversalPaths.length; j++) {
-      const traversalPath = traversalPaths[j];
-
-      // Generate traversal path for the current layer
-      let layerTraversalPath = Array(i).fill(traversalPath).join('');
-
-      // Append the traversal path to the testUrl
-      let layerUrl = `${testUrl}/${directory}${layerTraversalPath}`;
-
-      currentLayer++;
-      progressBar.value = currentLayer;
-      progressBar.textContent = `${currentLayer} / ${totalLayers}`;
-
-      try {
-        const response = await fetch(layerUrl, {
-          method: 'GET'
-        });
-        log.innerHTML += `<div>${layerUrl} : ${response.status}</div>`;
-        if (response.ok) {
-          result.innerHTML += `<li><span>${layerUrl}</span></li>`;
-        }
-      } catch (error) {
-        log.innerHTML += `<div>${layerUrl} : ${error.message}</div>`;
-      }
+      return response.ok;
+    } catch (error) {
+      return false;
     }
   }
 
-  progressBar.style.display = 'none';
-}
+  async function testUrl(url, layers, directory) {
+    let testUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+    testedUrls.push(testUrl);
 
+    const traversalPaths = ['./', '../', '.%2e', '%2e', '%2f', '%252e', '.%2f.%2f'];
 
-      
-    </script>
+    for (let i = 1; i <= layers; i++) {
+      for (let j = 0; j < traversalPaths.length; j++) {
+        const traversalPath = traversalPaths[j];
+
+        // Generate traversal path for the current layer
+        let layerTraversalPath = Array(i).fill(traversalPath).join('');
+
+        // Append the traversal path to the testUrl
+        let layerUrl = directory ? `${testUrl}/${directory}/${layerTraversalPath}` : `${testUrl}/${layerTraversalPath}`;
+
+        currentLayer++;
+        progressBar.value = currentLayer;
+        progressBar.textContent = `${currentLayer} / ${totalLayers}`;
+
+        try {
+          const request = new Request(layerUrl, {
+            method: 'GET',
+            headers: new Headers({
+              'Content-Type': 'text/plain'
+            }),
+            mode: 'cors',
+            cache: 'default',
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer-when-downgrade'
+          });
+
+          const response = await fetch(request);
+          log.innerHTML += `<div>${layerUrl} : ${response.status}</div>`;
+          if (response.ok) {
+            result.innerHTML += `<li><span>${layerUrl}</span></li>`;
+          }
+        } catch (error) {
+          log.innerHTML += `<div>${layerUrl} : ${error.message}</div>`;
+        }
+      }
+    }
+
+    progressBar.style.display = 'none';
+  }
+</script>
+
   </body>
 	</html>
