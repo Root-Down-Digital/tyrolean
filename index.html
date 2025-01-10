@@ -180,12 +180,13 @@
 
   async function validateUrl(url) {
     try {
-      const response = await fetch(url, {
-        method: 'HEAD'
-      });
-      return response.ok;
+        const response = await fetch(url, {
+            method: 'HEAD',
+            mode: 'no-cors'
+        });
+        return true;  // If we get here without throwing, consider it valid
     } catch (error) {
-      return false;
+        return false;
     }
   }
 
